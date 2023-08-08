@@ -198,7 +198,10 @@ class Conference extends Component<Props, State> {
         if (this._conference.serverURL.startsWith(appProtocolSurplus)) {
             this._conference.serverURL = this._conference.serverURL.replace(appProtocolSurplus, 'https://');
         }
-        const url = new URL(this._conference.room, this._conference.serverURL);
+
+        const serverUrl = new URL(this._conference.serverURL);
+        const jwt = new URLSearchParams(serverUrl.search).get('jwt');
+        const url = new URL(this._conference.room, new URL(serverUrl.pathname, serverUrl.origin));
         const roomName = url.pathname.split('/').pop();
         const host = this._conference.serverURL.replace(/https?:\/\//, '');
         const searchParameters = Object.fromEntries(url.searchParams);
@@ -226,15 +229,12 @@ class Conference extends Component<Props, State> {
         const interfaceConfigOverwrite = {
             SHOW_CHROME_EXTENSION_BANNER: false
         };
-        let jwt;
 
         Object.entries(hashParameters).forEach(([ key, value ]) => {
             if (key.startsWith('config.')) {
                 const configKey = key.substring('config.'.length);
 
                 configOverwrite[configKey] = value;
-            } else if (key === 'jwt') {
-                jwt = value;
             }
         });
 
